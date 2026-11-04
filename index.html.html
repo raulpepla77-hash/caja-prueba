@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SimuGam - Laboratorio de Gamificación y Motivación Educativa</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.7); }
+
+    /* Custom range slider thumb styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #4f46e5;
+      cursor: pointer;
+      margin-top: -6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease, background-color 0.2s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      background: #4338ca;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    .dark input[type=range]::-webkit-slider-runnable-track {
+      background: #334155;
+    }
+    .radar-polygon {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bar-transition {
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-3 transition-colors">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white">SimuGam</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-200 dark:border-indigo-800">Deci & Ryan Framework</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Simulador de Diseño Instruccional & Gamificación en LMS</p>
+        </div>
+      </div>
+
+      <!-- Header actions: Theme toggle and Report trigger -->
+      <div class="flex items-center gap-2">
+        <button id="themeToggleBtn" aria-label="Cambiar tema" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <!-- Moon Icon (Default Light) -->
+          <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+          <!-- Sun Icon -->
+          <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
+          </svg>
+        </button>
+
+        <button id="openReportBtn" class="flex items-center gap-2 px-3.5 py-2 text-xs md:text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-600/30 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>Auditoría Moodle</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+
+    <!-- PRESETS BAR -->
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Escenarios Didácticos Típicos:</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button data-preset="points-ranks" class="preset-btn px-3 py-2 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition text-center">
+            🎖️ Puntos & Leaderboard Clásico
+          </button>
+          <button data-preset="community-flow" class="preset-btn px-3 py-2 text-xs font-medium rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition text-center ring-1 ring-indigo-400/30">
+            🌱 Flujo & Comunidad (SDT)
+          </button>
+          <button data-preset="badges-excess" class="preset-btn px-3 py-2 text-xs font-medium rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition text-center">
+            ⚠️ Saturación de Insignias
+          </button>
+          <button data-preset="rigid-linear" class="preset-btn px-3 py-2 text-xs font-medium rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition text-center">
+            🔒 Conductismo Rígido
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKBENCH GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- LEFT COLUMN: CONTROLS & MECÁNICAS (5 Cols) -->
+      <section class="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-6">
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <span>⚙️</span> Parámetros del Entorno Virtual
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Configuración pedagógica de actividades y plugins en Moodle</p>
+          </div>
+          <button id="resetParamsBtn" class="text-xs text-slate-400 hover:text-indigo-500 underline transition">Reestablecer</button>
+        </div>
+
+        <div class="space-y-5">
+          <!-- Control 1: Insignias / Recompensas Extrínsecas -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label for="sliderBadges" class="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <span>🏅</span> Frecuencia de Insignias / Puntos
+              </label>
+              <span id="badgesLabel" class="font-mono text-indigo-600 dark:text-indigo-400 font-medium">Equilibrada (3/sem)</span>
+            </div>
+            <input type="range" id="sliderBadges" min="1" max="5" value="3" step="1" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-400">
+              <span>Mínima (Hitos clave)</span>
+              <span>Moderada</span>
+              <span>Saturación continua</span>
+            </div>
+          </div>
+
+          <!-- Control 2: Leaderboard / Tablas de clasificación -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label for="selectLeaderboard" class="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <span>🏆</span> Visibilidad del Ranking (Leaderboard)
+              </label>
+            </div>
+            <select id="selectLeaderboard" class="w-full text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="none">Oculto (Solo autocomparación histórica personal)</option>
+              <option value="top5">Top 5 Anónimo / Tablero regional</option>
+              <option value="relative" selected>Posición Relativa (Vecinos inmediatos +/-2)</option>
+              <option value="public">Público General Abierto (Lista completa 1 a N)</option>
+            </select>
+            <p class="text-[11px] text-slate-400 italic">Determina el nivel de exposición comparativa social entre pares.</p>
+          </div>
+
+          <!-- Control 3: Misiones Cooperativas -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label for="sliderCoop" class="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <span>🤝</span> Misiones y Desafíos Cooperativos
+              </label>
+              <span id="coopLabel" class="font-mono text-indigo-600 dark:text-indigo-400 font-medium">Equipos Periódicos</span>
+            </div>
+            <input type="range" id="sliderCoop" min="1" max="5" value="3" step="1" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-400">
+              <span>Solo individual</span>
+              <span>Híbrido balanceado</span>
+              <span>TBL e interdependencia alta</span>
+            </div>
+          </div>
+
+          <!-- Control 4: Nivel de Reto / Progresión Adaptativa -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label for="sliderChallenge" class="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <span>🎯</span> Nivel de Reto y Dificultad
+              </label>
+              <span id="challengeLabel" class="font-mono text-indigo-600 dark:text-indigo-400 font-medium">Flujo / ZDP Csíkszentmihályi</span>
+            </div>
+            <input type="range" id="sliderChallenge" min="1" max="5" value="3" step="1" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-400">
+              <span>Trivial / Aburrido</span>
+              <span>Zona Óptima de Flujo</span>
+              <span>Punitivo / Frustrante</span>
+            </div>
+          </div>
+
+          <!-- Control 5: Autonomía de Rutas -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs">
+              <label for="sliderAutonomy" class="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <span>🗺️</span> Flexibilidad y Rutas de Aprendizaje
+              </label>
+              <span id="autonomyLabel" class="font-mono text-indigo-600 dark:text-indigo-400 font-medium">Rutas bifurcadas + Optativas</span>
+            </div>
+            <input type="range" id="sliderAutonomy" min="1" max="5" value="4" step="1" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-400">
+              <span>Ruta secuencial fija</span>
+              <span>Optativas moderadas</span>
+              <span>Aprendizaje no lineal total</span>
+            </div>
+          </div>
+
+          <!-- Theoretical foundation info card -->
+          <div class="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+            <div class="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <span>📚</span> Fundamentación Teórica Integrada
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
+              Basado en la <strong>Teoría de la Autodeterminación (SDT)</strong> de Ryan & Deci. El interés profundo y persistente se sostiene en 3 pilares: <em>Autonomía</em> (agencia en el camino), <em>Competencia</em> (desafíos proporcionales con feedback) y <em>Relación</em> (vínculo y sentido social de pertenencia).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: TELEMETRÍA, GRÁFICOS Y DIAGNÓSTICO (7 Cols) -->
+      <section class="lg:col-span-7 space-y-6">
+
+        <!-- METRICS & RADAR CARD -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h2 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <span>📊</span> Impacto Psicoeducativo Proyectado
+              </h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Simulación del comportamiento comportamental del cohorte</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="globalHealthBadge" class="text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                Diseño Saludable
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+            
+            <!-- SVG RADAR CHART: TRIADA DE LA AUTODETERMINACIÓN (5 Cols) -->
+            <div class="md:col-span-5 flex flex-col items-center justify-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              <span class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Triada de Autodeterminación (SDT)</span>
+              
+              <div class="relative w-48 h-48">
+                <svg id="radarSvg" viewBox="0 0 200 200" class="w-full h-full overflow-visible">
+                  <!-- Radar background grids -->
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1" stroke-dasharray="3 3"/>
+                  <circle cx="100" cy="100" r="50" fill="none" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1"/>
+                  <circle cx="100" cy="100" r="20" fill="none" stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-width="1"/>
+
+                  <!-- Radar Axes from center (100,100) -->
+                  <!-- Top: Autonomía (100, 20) -->
+                  <line x1="100" y1="100" x2="100" y2="20" stroke="currentColor" class="text-slate-300 dark:text-slate-700" stroke-width="1"/>
+                  <!-- Bottom Right: Competencia (cos 30*80 = 69.28 -> 169.28, sin 30*80 = 40 -> 140) -->
+                  <line x1="100" y1="100" x2="169.3" y2="140" stroke="currentColor" class="text-slate-300 dark:text-slate-700" stroke-width="1"/>
+                  <!-- Bottom Left: Relación (30.7, 140) -->
+                  <line x1="100" y1="100" x2="30.7" y2="140" stroke="currentColor" class="text-slate-300 dark:text-slate-700" stroke-width="1"/>
+
+                  <!-- Dynamic Polygon -->
+                  <polygon id="radarPolygon" points="100,20 169.3,140 30.7,140" fill="rgba(99, 102, 241, 0.35)" stroke="#4f46e5" stroke-width="2.5" class="radar-polygon"/>
+
+                  <!-- Data Point Dots -->
+                  <circle id="dotAutonomy" cx="100" cy="40" r="4.5" fill="#4f46e5" class="transition-all duration-300"/>
+                  <circle id="dotCompetence" cx="150" cy="130" r="4.5" fill="#4f46e5" class="transition-all duration-300"/>
+                  <circle id="dotRelatedness" cx="50" cy="130" r="4.5" fill="#4f46e5" class="transition-all duration-300"/>
+
+                  <!-- Labels -->
+                  <text x="100" y="12" text-anchor="middle" class="text-[10px] font-bold fill-slate-600 dark:fill-slate-300">Autonomía</text>
+                  <text x="178" y="152" text-anchor="middle" class="text-[10px] font-bold fill-slate-600 dark:fill-slate-300">Competencia</text>
+                  <text x="22" y="152" text-anchor="middle" class="text-[10px] font-bold fill-slate-600 dark:fill-slate-300">Relación</text>
+                </svg>
+              </div>
+
+              <div class="flex items-center justify-between w-full text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 px-2">
+                <span>Aut: <strong id="valAutonomyText" class="text-indigo-600 dark:text-indigo-400">80%</strong></span>
+                <span>Comp: <strong id="valCompetenceText" class="text-indigo-600 dark:text-indigo-400">75%</strong></span>
+                <span>Rel: <strong id="valRelatednessText" class="text-indigo-600 dark:text-indigo-400">65%</strong></span>
+              </div>
+            </div>
+
+            <!-- PRIMARY 5 METRICS BARS (7 Cols) -->
+            <div class="md:col-span-7 space-y-3.5">
+              
+              <!-- Metric 1: Motivación Intrínseca -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>✨</span> Motivación Intrínseca (Maestría genuina)
+                  </span>
+                  <span id="metricIntrinsicVal" class="font-mono font-bold text-slate-900 dark:text-white">78%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div id="barIntrinsic" class="bar-transition bg-emerald-500 h-2.5 rounded-full" style="width: 78%"></div>
+                </div>
+              </div>
+
+              <!-- Metric 2: Motivación Extrínseca & Sobrejustificación -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>🪙</span> Dependencia Extrínseca (Puntos/Insignias)
+                  </span>
+                  <span id="metricExtrinsicVal" class="font-mono font-bold text-slate-900 dark:text-white">45%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div id="barExtrinsic" class="bar-transition bg-amber-500 h-2.5 rounded-full" style="width: 45%"></div>
+                </div>
+              </div>
+
+              <!-- Metric 3: Ansiedad / Toxicidad -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>⚡</span> Ansiedad y Competencia Destructiva
+                  </span>
+                  <span id="metricAnxietyVal" class="font-mono font-bold text-slate-900 dark:text-white">22%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div id="barAnxiety" class="bar-transition bg-indigo-500 h-2.5 rounded-full" style="width: 22%"></div>
+                </div>
+              </div>
+
+              <!-- Metric 4: Retención Estimada -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>🎓</span> Retención y Permanencia en Curso
+                  </span>
+                  <span id="metricRetentionVal" class="font-mono font-bold text-slate-900 dark:text-white">88%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div id="barRetention" class="bar-transition bg-blue-500 h-2.5 rounded-full" style="width: 88%"></div>
+                </div>
+              </div>
+
+              <!-- Metric 5: Sobrecarga Cognitiva -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    <span>🧠</span> Sobrecarga de Reglas / Fatiga
+                  </span>
+                  <span id="metricCognitiveVal" class="font-mono font-bold text-slate-900 dark:text-white">30%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div id="barCognitive" class="bar-transition bg-violet-500 h-2.5 rounded-full" style="width: 30%"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- DIAGNOSTIC & EARLY WARNING SIGNALS -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+              <span>🩺</span> Diagnóstico Pedagógico y Alertas Activas
+            </h3>
+            <span id="alertCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-mono text-slate-600 dark:text-slate-400">
+              0 advertencias
+            </span>
+          </div>
+
+          <div id="diagnosticsContainer" class="space-y-2.5 text-xs">
+            <!-- Dynamic alerts inserted via JavaScript -->
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- MOODLE / LMS IMPLEMENTATION GUIDELINES CARD -->
+    <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+      <h3 class="font-bold text-sm text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+        <span>⚙️</span> Recomendaciones de Configuración Directa en Moodle LMS
+      </h3>
+      <div id="moodleDirectAdvice" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <!-- Dynamic recommendations will render here -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 px-6 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>SimuGam • Diseñado para Docencia Universitaria e Investigación en Diseño Instruccional</span>
+      <span>Teoría de la Autodeterminación (SDT) • Edward L. Deci & Richard M. Ryan</span>
+    </div>
+  </footer>
+
+  <!-- AUDIT REPORT MODAL (HIDDEN BY DEFAULT) -->
+  <div id="reportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+        <div class="flex items-center gap-2.5">
+          <span class="p-2 bg-indigo-100 dark:bg-indigo-950/80 rounded-lg text-indigo-600 dark:text-indigo-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </span>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">Ficha de Auditoría de Gamificación para Moodle</h3>
+            <p class="text-xs text-slate-500">Dictamen de rigor motivacional y recomendaciones técnicas</p>
+          </div>
+        </div>
+        <button id="closeReportBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-sans" id="printableReportContent">
+        <div class="border-b border-slate-100 dark:border-slate-800 pb-3">
+          <p class="font-semibold text-slate-900 dark:text-white">Estado General del Diseño:</p>
+          <p id="reportSummaryStatus" class="mt-1 text-slate-600 dark:text-slate-400">Calculando estado...</p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-2">1. Desglose de Indicadores Cuantitativos</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center" id="reportScoreGrid">
+            <!-- Dynamic scores rendered here -->
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-1.5">2. Análisis Epistemológico y Motivacional</h4>
+          <p id="reportPedagogicalAnalysis" class="text-slate-600 dark:text-slate-400">
+            <!-- Dynamic analysis -->
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-1.5">3. Configuración Específica Sugerida para Moodle</h4>
+          <ul id="reportMoodleActions" class="space-y-1.5 list-disc pl-4 text-slate-600 dark:text-slate-400">
+            <!-- Dynamic actions -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+        <span class="text-[11px] text-slate-400">SimuGam v2.4 • Exportación de auditoría</span>
+        <div class="flex items-center gap-2">
+          <button id="copyReportBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition font-medium">
+            Copiar Texto
+          </button>
+          <button id="closeReportBtnBottom" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition font-medium">
+            Entendido
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2 border border-slate-700">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+    </svg>
+    <span id="toastMessage">Texto copiado al portapapeles</span>
+  </div>
+
+  <!-- SIMULATION LOGIC SCRIPT -->
+  <script>
+    /**
+     * SIMUGAM SIMULATOR LOGIC
+     * Built around Deci & Ryan's Self-Determination Theory (SDT)
+     * Models: Overjustification effect, Csikszentmihalyi's Flow Channel,
+     * Social Comparison Bias (Festinger), Cognitive Load Theory (Sweller).
+     */
+
+    // State object holding the parameters
+    const state = {
+      badges: 3,         // 1 to 5
+      leaderboard: 'relative', // 'none', 'top5', 'relative', 'public'
+      coop: 3,           // 1 to 5
+      challenge: 3,      // 1 to 5 (1=Trivial, 3=Flow/ZDP, 5=Punitive)
+      autonomy: 4,       // 1 to 5 (1=Strict sequential, 5=Total learner agency)
+    };
+
+    // Preset configurations
+    const PRESETS = {
+      'points-ranks': {
+        badges: 5,
+        leaderboard: 'public',
+        coop: 1,
+        challenge: 4,
+        autonomy: 1
+      },
+      'community-flow': {
+        badges: 2,
+        leaderboard: 'relative',
+        coop: 4,
+        challenge: 3,
+        autonomy: 4
+      },
+      'badges-excess': {
+        badges: 5,
+        leaderboard: 'top5',
+        coop: 2,
+        challenge: 2,
+        autonomy: 2
+      },
+      'rigid-linear': {
+        badges: 1,
+        leaderboard: 'none',
+        coop: 1,
+        challenge: 5,
+        autonomy: 1
+      }
+    };
+
+    // Label helpers for sliders
+    const badgeLabels = {
+      1: "Mínima / Hitos mayores (1 al mes)",
+      2: "Selectiva / Esfuerzo auténtico (1 quincenal)",
+      3: "Equilibrada (1 por módulo semanal)",
+      4: "Alta frecuencia (2-3 por tarea)",
+      5: "Saturación continua (Por cada clic/micro-acción)"
+    };
+
+    const coopLabels = {
+      1: "Individual estricto (Aislamiento formativo)",
+      2: "Foros ocasionales sin interdependencia",
+      3: "Equipos periódicos (Casos y debates guiados)",
+      4: "Aprendizaje Basado en Equipos (TBL) continuo",
+      5: "Comunidad de práctica autoorganizada / Co-creación"
+    };
+
+    const challengeLabels = {
+      1: "Trivial (Sin desafío cognitivo, aburrimiento)",
+      2: "Fácil (Mínimo esfuerzo requerido)",
+      3: "Zona de Desarrollo Próximo / Flujo óptimo",
+      4: "Exigencia alta (Riesgo de frustración si falta andamiaje)",
+      5: "Punitivo / Sobrecarga extrema"
+    };
+
+    const autonomyLabels = {
+      1: "Ruta lineal fija y bloqueada con candados",
+      2: "Mínima flexibilidad de fechas",
+      3: "Elección de formatos de entrega y temas",
+      4: "Rutas bifurcadas + Misiones optativas",
+      5: "Autonomía total de itinerario y autoevaluación"
+    };
+
+    // DOM Elements
+    const sliderBadges = document.getElementById('sliderBadges');
+    const selectLeaderboard = document.getElementById('selectLeaderboard');
+    const sliderCoop = document.getElementById('sliderCoop');
+    const sliderChallenge = document.getElementById('sliderChallenge');
+    const sliderAutonomy = document.getElementById('sliderAutonomy');
+
+    const badgesLabel = document.getElementById('badgesLabel');
+    const coopLabel = document.getElementById('coopLabel');
+    const challengeLabel = document.getElementById('challengeLabel');
+    const autonomyLabel = document.getElementById('autonomyLabel');
+
+    // Outputs
+    const metricIntrinsicVal = document.getElementById('metricIntrinsicVal');
+    const barIntrinsic = document.getElementById('barIntrinsic');
+    const metricExtrinsicVal = document.getElementById('metricExtrinsicVal');
+    const barExtrinsic = document.getElementById('barExtrinsic');
+    const metricAnxietyVal = document.getElementById('metricAnxietyVal');
+    const barAnxiety = document.getElementById('barAnxiety');
+    const metricRetentionVal = document.getElementById('metricRetentionVal');
+    const barRetention = document.getElementById('barRetention');
+    const metricCognitiveVal = document.getElementById('metricCognitiveVal');
+    const barCognitive = document.getElementById('barCognitive');
+
+    const radarPolygon = document.getElementById('radarPolygon');
+    const dotAutonomy = document.getElementById('dotAutonomy');
+    const dotCompetence = document.getElementById('dotCompetence');
+    const dotRelatedness = document.getElementById('dotRelatedness');
+
+    const valAutonomyText = document.getElementById('valAutonomyText');
+    const valCompetenceText = document.getElementById('valCompetenceText');
+    const valRelatednessText = document.getElementById('valRelatednessText');
+    const globalHealthBadge = document.getElementById('globalHealthBadge');
+    const diagnosticsContainer = document.getElementById('diagnosticsContainer');
+    const alertCountBadge = document.getElementById('alertCountBadge');
+    const moodleDirectAdvice = document.getElementById('moodleDirectAdvice');
+
+    // Modal elements
+    const openReportBtn = document.getElementById('openReportBtn');
+    const closeReportBtn = document.getElementById('closeReportBtn');
+    const closeReportBtnBottom = document.getElementById('closeReportBtnBottom');
+    const reportModal = document.getElementById('reportModal');
+    const copyReportBtn = document.getElementById('copyReportBtn');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    // Theme elements
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const sunIcon = document.getElementById('sunIcon');
+    const moonIcon = document.getElementById('moonIcon');
+
+    /**
+     * Compute psychological metrics from parameters
+     */
+    function computeMetrics(s) {
+      // Leaderboard numeric weight
+      let lbExtrinsic = 15;
+      let lbAnxiety = 5;
+      let lbRelatednessLoss = 0;
+
+      if (s.leaderboard === 'none') {
+        lbExtrinsic = 5;
+        lbAnxiety = 5;
+      } else if (s.leaderboard === 'top5') {
+        lbExtrinsic = 20;
+        lbAnxiety = 25;
+        lbRelatednessLoss = 10;
+      } else if (s.leaderboard === 'relative') {
+        lbExtrinsic = 15;
+        lbAnxiety = 12;
+        lbRelatednessLoss = 2;
+      } else if (s.leaderboard === 'public') {
+        lbExtrinsic = 35;
+        lbAnxiety = 48;
+        lbRelatednessLoss = 30; // Destructive competition
+      }
+
+      // SDT Pillar 1: Autonomy (0 to 100)
+      let autonomyScore = (s.autonomy * 20);
+      // Heavy badges diminish autonomy perception (feels controlling: Deci 1971)
+      if (s.badges >= 4) autonomyScore -= (s.badges - 3) * 12;
+      autonomyScore = Math.max(10, Math.min(100, Math.round(autonomyScore)));
+
+      // SDT Pillar 2: Competence (Flow Channel: Csikszentmihalyi)
+      // Optimal challenge is level 3. Level 1 is boredom, Level 5 is panic/frustration
+      let competenceBase = 0;
+      if (s.challenge === 3) competenceBase = 90;
+      else if (s.challenge === 2 || s.challenge === 4) competenceBase = 65;
+      else competenceBase = 35; // 1 or 5
+
+      // Feedback from badges can slightly support competence if not saturated
+      if (s.badges === 2 || s.badges === 3) competenceBase += 8;
+      let competenceScore = Math.max(10, Math.min(100, Math.round(competenceBase)));
+
+      // SDT Pillar 3: Relatedness (0 to 100)
+      let relatednessScore = (s.coop * 22) - lbRelatednessLoss;
+      relatednessScore = Math.max(10, Math.min(100, Math.round(relatednessScore)));
+
+      // 1. Motivación Intrínseca (SDT composite: Ryan & Deci)
+      // Intrinsic motivation flourishes when autonomy, competence, and relatedness are high
+      let intrinsic = (autonomyScore * 0.38) + (competenceScore * 0.38) + (relatednessScore * 0.24);
+      // Overjustification penalty: excess extrinsic rewards suppress intrinsic drive
+      if (s.badges === 4) intrinsic -= 12;
+      if (s.badges === 5) intrinsic -= 28;
+      if (s.leaderboard === 'public') intrinsic -= 15;
+      intrinsic = Math.max(8, Math.min(98, Math.round(intrinsic)));
+
+      // 2. Motivación Extrínseca (Salience of rewards and external pressure)
+      let extrinsic = (s.badges * 14) + lbExtrinsic + (s.challenge === 1 ? 15 : 0);
+      extrinsic = Math.max(10, Math.min(99, Math.round(extrinsic)));
+
+      // 3. Riesgo de Ansiedad y Competencia Tóxica
+      let anxiety = lbAnxiety;
+      if (s.challenge === 4) anxiety += 18;
+      if (s.challenge === 5) anxiety += 40;
+      if (s.autonomy === 1) anxiety += 10;
+      if (s.coop >= 4 && s.leaderboard === 'public') anxiety += 15; // Mixed signals: be teammates yet fight for leaderboard
+      anxiety = Math.max(5, Math.min(98, Math.round(anxiety)));
+
+      // 4. Retención y Participación Efectiva en el Curso
+      // Supported by intrinsic motivation and competence; hurt by extreme anxiety or apathy
+      let retention = (intrinsic * 0.55) + (competenceScore * 0.35) + 15;
+      if (anxiety > 65) retention -= (anxiety - 65) * 0.85;
+      if (s.challenge === 1) retention -= 25; // Drop out due to boredom
+      retention = Math.max(12, Math.min(99, Math.round(retention)));
+
+      // 5. Sobrecarga Cognitiva (Sweller's CLT)
+      // Extraneous load: too many gamified elements + complex rules + high challenge
+      let cognitive = 15 + (s.badges * 7) + (s.challenge * 8);
+      if (s.leaderboard === 'public') cognitive += 10;
+      if (s.coop === 5) cognitive += 12; // Complex team management overhead
+      cognitive = Math.max(10, Math.min(96, Math.round(cognitive)));
+
+      return {
+        autonomyScore,
+        competenceScore,
+        relatednessScore,
+        intrinsic,
+        extrinsic,
+        anxiety,
+        retention,
+        cognitive
+      };
+    }
+
+    /**
+     * Helper to map value (0-100) to Radar chart coordinates
+     * Center: (100, 100). Max Radius: 80.
+     * Axis 1: Autonomía (Angle -90 deg / Top)
+     * Axis 2: Competencia (Angle 30 deg / Bottom-Right)
+     * Axis 3: Relación (Angle 150 deg / Bottom-Left)
+     */
+    function getRadarCoord(value, angleDeg) {
+      const rad = (angleDeg * Math.PI) / 180;
+      const r = (value / 100) * 80;
+      const x = 100 + r * Math.cos(rad);
+      const y = 100 + r * Math.sin(rad);
+      return { x: x.toFixed(1), y: y.toFixed(1) };
+    }
+
+    /**
+     * Render Radar Graphic and Bar Telemetry
+     */
+    function renderTelemetry(metrics) {
+      // 1. Radar SVG
+      const pAuto = getRadarCoord(metrics.autonomyScore, -90);
+      const pComp = getRadarCoord(metrics.competenceScore, 30);
+      const pRela = getRadarCoord(metrics.relatednessScore, 150);
+
+      radarPolygon.setAttribute('points', `${pAuto.x},${pAuto.y} ${pComp.x},${pComp.y} ${pRela.x},${pRela.y}`);
+      
+      dotAutonomy.setAttribute('cx', pAuto.x);
+      dotAutonomy.setAttribute('cy', pAuto.y);
+      dotCompetence.setAttribute('cx', pComp.x);
+      dotCompetence.setAttribute('cy', pComp.y);
+      dotRelatedness.setAttribute('cx', pRela.x);
+      dotRelatedness.setAttribute('cy', pRela.y);
+
+      valAutonomyText.textContent = `${metrics.autonomyScore}%`;
+      valCompetenceText.textContent = `${metrics.competenceScore}%`;
+      valRelatednessText.textContent = `${metrics.relatednessScore}%`;
+
+      // 2. Linear Bars & Metric Values
+      metricIntrinsicVal.textContent = `${metrics.intrinsic}%`;
+      barIntrinsic.style.width = `${metrics.intrinsic}%`;
+      barIntrinsic.className = `bar-transition h-2.5 rounded-full ${metrics.intrinsic > 65 ? 'bg-emerald-500' : metrics.intrinsic > 40 ? 'bg-amber-500' : 'bg-rose-500'}`;
+
+      metricExtrinsicVal.textContent = `${metrics.extrinsic}%`;
+      barExtrinsic.style.width = `${metrics.extrinsic}%`;
+      barExtrinsic.className = `bar-transition h-2.5 rounded-full ${metrics.extrinsic > 70 ? 'bg-rose-500' : 'bg-amber-500'}`;
+
+      metricAnxietyVal.textContent = `${metrics.anxiety}%`;
+      barAnxiety.style.width = `${metrics.anxiety}%`;
+      barAnxiety.className = `bar-transition h-2.5 rounded-full ${metrics.anxiety > 60 ? 'bg-rose-500' : metrics.anxiety > 35 ? 'bg-amber-500' : 'bg-indigo-500'}`;
+
+      metricRetentionVal.textContent = `${metrics.retention}%`;
+      barRetention.style.width = `${metrics.retention}%`;
+      barRetention.className = `bar-transition h-2.5 rounded-full ${metrics.retention > 75 ? 'bg-blue-500' : metrics.retention > 50 ? 'bg-amber-500' : 'bg-rose-500'}`;
+
+      metricCognitiveVal.textContent = `${metrics.cognitive}%`;
+      barCognitive.style.width = `${metrics.cognitive}%`;
+      barCognitive.className = `bar-transition h-2.5 rounded-full ${metrics.cognitive > 70 ? 'bg-rose-500' : metrics.cognitive > 45 ? 'bg-amber-500' : 'bg-violet-500'}`;
+
+      // Global Health Indicator
+      if (metrics.intrinsic >= 70 && metrics.anxiety <= 35 && metrics.retention >= 75) {
+        globalHealthBadge.textContent = "Diseño de Alto Valor Formativo (Óptimo)";
+        globalHealthBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800";
+      } else if (metrics.anxiety > 60 || metrics.retention < 45 || metrics.cognitive > 75) {
+        globalHealthBadge.textContent = "Alerta Crítica: Riesgo de Deserción o Frustración";
+        globalHealthBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800";
+      } else {
+        globalHealthBadge.textContent = "Diseño Moderado con Áreas de Fricción";
+        globalHealthBadge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800";
+      }
+    }
+
+    /**
+     * Generate dynamic diagnostics and educational warnings
+     */
+    function updateDiagnostics(metrics) {
+      const alerts = [];
+
+      // 1. Overjustification Effect (Deci, 1971; Lepper et al., 1973)
+      if (state.badges >= 4 && metrics.extrinsic > 65) {
+        alerts.push({
+          type: 'warning',
+          icon: '⚠️',
+          title: 'Efecto de Sobrejustificación (Overjustification Effect)',
+          desc: 'La saturación de insignias automáticas por tareas cotidianas sustituye el valor intrínseco de aprender por la mera recolección de puntos. Si se retiran los estímulos externos, los estudiantes cesarán la actividad.'
+        });
+      }
+
+      // 2. Destructive Social Comparison (Festinger's Social Comparison Theory)
+      if (state.leaderboard === 'public') {
+        alerts.push({
+          type: 'danger',
+          icon: '🚨',
+          title: 'Ranking Público Abierto: Desmotivación en Cola Larga',
+          desc: 'Un leaderboard global 1 a N solo motiva al 10% superior. Para el 90% inferior genera indefensión aprendida, fobia a la evaluación y deserción temprana por humillación pública.'
+        });
+      }
+
+      // 3. Cognitive Overload (Sweller)
+      if (metrics.cognitive >= 70) {
+        alerts.push({
+          type: 'warning',
+          icon: '🧠',
+          title: 'Sobrecarga Cognitiva Extrínseca Elevada',
+          desc: 'El estudiante gasta más energía cognitiva descifrando las reglas de la gamificación, los niveles y las combinaciones que procesando los contenidos académicos de la asignatura.'
+        });
+      }
+
+      // 4. Frustration / Punitive Zone (Vygotsky / Csikszentmihalyi)
+      if (state.challenge === 5) {
+        alerts.push({
+          type: 'danger',
+          icon: '🛑',
+          title: 'Zona de Frustración / Ruptura de Andamiaje',
+          desc: 'El nivel de dificultad sobrepasa la Zona de Desarrollo Próximo (ZDP) sin brindar andamiajes suficientes. Los estudiantes experimentan ansiedad paralizante.'
+        });
+      } else if (state.challenge === 1) {
+        alerts.push({
+          type: 'info',
+          icon: '💤',
+          title: 'Apatía y Aburrimiento por Falta de Reto',
+          desc: 'La exigencia es tan baja que no activa el sentido de competencia o maestría, lo que fomenta el abandono pasivo.'
+        });
+      }
+
+      // 5. Positive State of Flow (Csikszentmihalyi)
+      if (state.challenge === 3 && state.autonomy >= 3 && metrics.intrinsic >= 75) {
+        alerts.push({
+          type: 'success',
+          icon: '🌟',
+          title: 'Estado de Flujo y Andamiaje Óptimo Alcanzado',
+          desc: 'Equilibrio ejemplar entre destreza del estudiante y desafío cognitivo. Las tareas promueven autorregulación, curiosidad epistémica y perseverancia.'
+        });
+      }
+
+      // 6. Collaborative Synergies (Johnson & Johnson Cooperative Learning)
+      if (state.coop >= 4 && state.leaderboard !== 'public') {
+        alerts.push({
+          type: 'success',
+          icon: '🤝',
+          title: 'Sinergia Cooperativa Efectiva',
+          desc: 'La interdependencia positiva fomenta el apoyo entre pares (co-andamiaje) y el sentido de comunidad virtual, amortiguando la soledad del aprendizaje online.'
+        });
+      }
+
+      // Render alerts
+      alertCountBadge.textContent = `${alerts.length} observaciones`;
+      diagnosticsContainer.innerHTML = '';
+
+      if (alerts.length === 0) {
+        diagnosticsContainer.innerHTML = `
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 text-center">
+            No hay anomalías severas registradas. El entorno presenta un equilibrio operacional neutro.
+          </div>
+        `;
+        return;
+      }
+
+      alerts.forEach(alert => {
+        let borderClass = "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-800 dark:text-slate-200";
+        if (alert.type === 'danger') {
+          borderClass = "border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-900 dark:text-rose-200";
+        } else if (alert.type === 'warning') {
+          borderClass = "border-amber-200 dark:border-amber-900/60 bg-amber-50/60 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200";
+        } else if (alert.type === 'success') {
+          borderClass = "border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200";
+        }
+
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-xl border ${borderClass} flex items-start gap-2.5`;
+        div.innerHTML = `
+          <span class="text-base flex-shrink-0 mt-0.5">${alert.icon}</span>
+          <div>
+            <div class="font-bold text-[12px]">${alert.title}</div>
+            <p class="text-[11px] opacity-90 mt-0.5 leading-relaxed">${alert.desc}</p>
+          </div>
+        `;
+        diagnosticsContainer.appendChild(div);
+      });
+    }
+
+    /**
+     * Render Moodle LMS actionable suggestions
+     */
+    function updateMoodleAdvice(metrics) {
+      let badgeCard = {
+        title: "Insignias Moodle (Badges API)",
+        text: state.badges >= 4 
+          ? "Configura criterios estrictos (ej. finalización del 100% de un módulo temático con calificación >85) en lugar de emitir insignias por simple participación en foros."
+          : "Otorga insignias conectadas con estándares Open Badges vinculadas a competencias complejas demostradas (evidencias en talleres)."
+      };
+
+      let leaderboardCard = {
+        title: "Bloque de Clasificación / Ranking",
+        text: state.leaderboard === 'public'
+          ? "⚠️ Se desaconseja el plugin 'Level Up!' con ranking abierto sin anonimización. Configúralo en modo 'Puntuación individual privada' o 'Comparación con vecinos inmediatos (+/-2)'."
+          : (state.leaderboard === 'none' 
+              ? "Usa el bloque 'Barra de Progreso' (Completion Progress) individual para feedback autorregulado sin comparación social."
+              : "Activa tableros anónimos mediante apodos o misiones grupales colaborativas (Puntos de Equipo).")
+      };
+
+      let pathCard = {
+        title: "Rutas y Restricciones de Acceso",
+        text: state.autonomy >= 4
+          ? "Aplica 'Restricciones de acceso' con opciones booleanas (O / OR) en Moodle para que el estudiante elija entre entregar un ensayo, podcast o mapa conceptual."
+          : "Evita el encadenamiento forzoso estricto de todas las lecciones con candados; genera al menos actividades optativas de profundización."
+      };
+
+      moodleDirectAdvice.innerHTML = `
+        <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <span>🏅</span> ${badgeCard.title}
+          </div>
+          <p class="text-slate-600 dark:text-slate-400 text-[11px]">${badgeCard.text}</p>
+        </div>
+        <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <span>🏆</span> ${leaderboardCard.title}
+          </div>
+          <p class="text-slate-600 dark:text-slate-400 text-[11px]">${leaderboardCard.text}</p>
+        </div>
+        <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <span>🗺️</span> ${pathCard.title}
+          </div>
+          <p class="text-slate-600 dark:text-slate-400 text-[11px]">${pathCard.text}</p>
+        </div>
+      `;
+    }
+
+    /**
+     * Master update trigger
+     */
+    function updateSimulation() {
+      // Sync label text
+      badgesLabel.textContent = badgeLabels[state.badges];
+      coopLabel.textContent = coopLabels[state.coop];
+      challengeLabel.textContent = challengeLabels[state.challenge];
+      autonomyLabel.textContent = autonomyLabels[state.autonomy];
+
+      // Calculate
+      const metrics = computeMetrics(state);
+
+      // Render
+      renderTelemetry(metrics);
+      updateDiagnostics(metrics);
+      updateMoodleAdvice(metrics);
+    }
+
+    /**
+     * Handle Presets
+     */
+    function applyPreset(presetKey) {
+      const p = PRESETS[presetKey];
+      if (!p) return;
+
+      state.badges = p.badges;
+      state.leaderboard = p.leaderboard;
+      state.coop = p.coop;
+      state.challenge = p.challenge;
+      state.autonomy = p.autonomy;
+
+      sliderBadges.value = state.badges;
+      selectLeaderboard.value = state.leaderboard;
+      sliderCoop.value = state.coop;
+      sliderChallenge.value = state.challenge;
+      sliderAutonomy.value = state.autonomy;
+
+      updateSimulation();
+      showToast(`Preset aplicado: ${presetKey.replace('-', ' ')}`);
+    }
+
+    /**
+     * Modal Audit Report Generation
+     */
+    function generateAuditReport() {
+      const metrics = computeMetrics(state);
+      
+      const summaryElem = document.getElementById('reportSummaryStatus');
+      const scoreGrid = document.getElementById('reportScoreGrid');
+      const analysisElem = document.getElementById('reportPedagogicalAnalysis');
+      const actionsElem = document.getElementById('reportMoodleActions');
+
+      let verdict = "";
+      if (metrics.intrinsic >= 70 && metrics.anxiety <= 35) {
+        verdict = "Diseño con alta coherencia pedagógica constructivista y excelente alineación con la Teoría de la Autodeterminación (SDT).";
+      } else if (metrics.anxiety > 50) {
+        verdict = "Alerta: El entorno induce excesiva comparación social negativa o frustración por sobreexigencia.";
+      } else if (metrics.extrinsic > 70) {
+        verdict = "Precaución: El curso presenta adicción por recompensas extrínsecas que eclipsa la maestría académica real.";
+      } else {
+        verdict = "Diseño aceptable pero con oportunidades de optimización en autonomía y actividades colaborativas.";
+      }
+      summaryElem.textContent = verdict;
+
+      scoreGrid.innerHTML = `
+        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div class="text-[10px] text-slate-500 uppercase">Motivación Intrínseca</div>
+          <div class="text-base font-bold text-emerald-600 dark:text-emerald-400">${metrics.intrinsic}%</div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div class="text-[10px] text-slate-500 uppercase">Dependencia Extrínseca</div>
+          <div class="text-base font-bold text-amber-600 dark:text-amber-400">${metrics.extrinsic}%</div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div class="text-[10px] text-slate-500 uppercase">Riesgo de Ansiedad</div>
+          <div class="text-base font-bold ${metrics.anxiety > 50 ? 'text-rose-600' : 'text-slate-600 dark:text-slate-300'}">${metrics.anxiety}%</div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div class="text-[10px] text-slate-500 uppercase">Retención Estimada</div>
+          <div class="text-base font-bold text-blue-600 dark:text-blue-400">${metrics.retention}%</div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div class="text-[10px] text-slate-500 uppercase">Sobrecarga Cognitiva</div>
+          <div class="text-base font-bold ${metrics.cognitive > 65 ? 'text-rose-500' : 'text-slate-600 dark:text-slate-300'}">${metrics.cognitive}%</div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div class="text-[10px] text-slate-500 uppercase">Pilar Autonomía</div>
+          <div class="text-base font-bold text-indigo-600 dark:text-indigo-400">${metrics.autonomyScore}%</div>
+        </div>
+      `;
+
+      analysisElem.innerHTML = `
+        El diseño actual proyecta una motivación intrínseca del <strong>${metrics.intrinsic}%</strong> con un riesgo de toxicidad/ansiedad del <strong>${metrics.anxiety}%</strong>. 
+        De acuerdo con el modelo de Deci & Ryan, la necesidad de competencia está fijada en <em>${metrics.competenceScore}%</em> y la relación en <em>${metrics.relatednessScore}%</em>. 
+        ${state.badges >= 4 ? 'Se detecta riesgo de desplazamiento del placer intrínseco por excesivo énfasis en insignias coleccionables (sobrejustificación).' : 'El nivel de incentivos externos respeta el foco en los aprendizajes esperados.'}
+      `;
+
+      actionsElem.innerHTML = `
+        <li><strong>Estructura de Insignias:</strong> ${state.badges >= 4 ? 'Reducir la emisión de badges; reservar insignias exclusivamente para el logro de macrocompetencias integradoras.' : 'Mantener el esquema selectivo de insignias para reforzar la percepción de competencia.'}</li>
+        <li><strong>Gestión de Leaderboard:</strong> ${state.leaderboard === 'public' ? 'Desactivar la tabla de clasificación pública en Moodle de forma inmediata; migrar a puntaje relativo o anónimo.' : 'Mantener la visualización privada o contextual para prevenir comparaciones jerárquicas nocivas.'}</li>
+        <li><strong>Rutas de Aprendizaje en LMS:</strong> Configurar opciones de itinerario no lineal mediante la herramienta de 'Restricciones de Acceso' y actividades condicionales en Moodle.</li>
+        <li><strong>Evaluación de Pares:</strong> Integrar talleres (Workshop module) para fortalecer la interdependencia cooperativa sin requerir gamificación punitiva.</li>
+      `;
+    }
+
+    /**
+     * Copy to clipboard fallback logic
+     */
+    function copyReportToClipboard() {
+      const content = document.getElementById('printableReportContent').innerText;
+      const textArea = document.createElement("textarea");
+      textArea.value = content;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast("¡Informe de auditoría copiado con éxito!");
+      } catch (err) {
+        showToast("No se pudo copiar automáticamente.");
+      }
+      document.body.removeChild(textArea);
+    }
+
+    /**
+     * Toast notification helper
+     */
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-12');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-12');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2600);
+    }
+
+    /**
+     * Event Listeners Setup
+     */
+    function initEvents() {
+      // Sliders & Select
+      sliderBadges.addEventListener('input', (e) => {
+        state.badges = parseInt(e.target.value);
+        updateSimulation();
+      });
+
+      selectLeaderboard.addEventListener('change', (e) => {
+        state.leaderboard = e.target.value;
+        updateSimulation();
+      });
+
+      sliderCoop.addEventListener('input', (e) => {
+        state.coop = parseInt(e.target.value);
+        updateSimulation();
+      });
+
+      sliderChallenge.addEventListener('input', (e) => {
+        state.challenge = parseInt(e.target.value);
+        updateSimulation();
+      });
+
+      sliderAutonomy.addEventListener('input', (e) => {
+        state.autonomy = parseInt(e.target.value);
+        updateSimulation();
+      });
+
+      // Presets buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const preset = btn.getAttribute('data-preset');
+          applyPreset(preset);
+        });
+      });
+
+      // Reset
+      document.getElementById('resetParamsBtn').addEventListener('click', () => {
+        applyPreset('community-flow');
+      });
+
+      // Report Modal
+      openReportBtn.addEventListener('click', () => {
+        generateAuditReport();
+        reportModal.classList.remove('opacity-0', 'pointer-events-none');
+        reportModal.classList.add('opacity-100');
+      });
+
+      const closeModal = () => {
+        reportModal.classList.add('opacity-0', 'pointer-events-none');
+        reportModal.classList.remove('opacity-100');
+      };
+
+      closeReportBtn.addEventListener('click', closeModal);
+      closeReportBtnBottom.addEventListener('click', closeModal);
+      reportModal.addEventListener('click', (e) => {
+        if (e.target === reportModal) closeModal();
+      });
+
+      copyReportBtn.addEventListener('click', copyReportToClipboard);
+
+      // Dark / Light Theme Toggle
+      themeToggleBtn.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        if (isDark) {
+          moonIcon.classList.add('hidden');
+          sunIcon.classList.remove('hidden');
+          localStorage.setItem('simugam_theme', 'dark');
+        } else {
+          sunIcon.classList.add('hidden');
+          moonIcon.classList.remove('hidden');
+          localStorage.setItem('simugam_theme', 'light');
+        }
+      });
+
+      // Check stored theme
+      if (localStorage.getItem('simugam_theme') === 'dark' || 
+         (!('simugam_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        moonIcon.classList.add('hidden');
+        sunIcon.classList.remove('hidden');
+      }
+    }
+
+    // Startup
+    window.onload = function () {
+      initEvents();
+      updateSimulation();
+    };
+  </script>
+</body>
+</html>

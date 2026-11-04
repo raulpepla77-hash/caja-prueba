@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SimuGam - Laboratorio de Dinámicas de Gamificación</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    input[type=range] {
+      accent-color: #6366f1;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Encabezado -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-6 mb-8 gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="p-2.5 bg-indigo-600 text-white rounded-xl shadow-md font-bold text-lg tracking-wider">SG</span>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">SimuGam Lab</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Laboratorio de Dinámicas de Gamificación y Motivación en el Aula Virtual</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="themeToggle" class="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          🌓 Modo Visual
+        </button>
+        <button id="btnExport" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition">
+          📄 Descargar Informe Diagnóstico
+        </button>
+      </div>
+    </header>
+
+    <!-- Barra de Perfiles / Presets Didácticos -->
+    <div class="bg-white dark:bg-slate-800/80 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700/60 mb-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cargar modelo de diseño didáctico:</span>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="applyPreset('balanced')" class="px-3 py-1.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+            🌱 Comunidad y Flujo Auténtico
+          </button>
+          <button onclick="applyPreset('traditional')" class="px-3 py-1.5 text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 rounded-md hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+            📊 Gamificación Clásica (PBL)
+          </button>
+          <button onclick="applyPreset('toxic')" class="px-3 py-1.5 text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 rounded-md hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
+            ⚠️ Saturación Extrínseca Crítica
+          </button>
+          <button onclick="resetDefaults()" class="px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-600 border border-slate-300 rounded-md hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600">
+            🔄 Restablecer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido Principal: 2 Columnas -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Panel de Control (Variables de Diseño) -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="bg-white dark:bg-slate-800/80 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700/60">
+          <h2 class="text-lg font-bold mb-1 flex items-center gap-2">
+            <span>⚙️</span> Parámetros del Entorno Virtual
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">Ajusta las palancas instruccionales configurables en plataformas como Moodle.</p>
+
+          <div class="space-y-5">
+            <!-- Insignias -->
+            <div>
+              <div class="flex justify-between items-center text-sm font-semibold mb-1">
+                <label for="badges" class="flex items-center gap-1.5">
+                  <span>🎖️ Insignias & Recompensas</span>
+                </label>
+                <span id="val_badges" class="font-mono text-indigo-600 dark:text-indigo-400">50%</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Frecuencia de micro-incentivos y medallas inmediatas.</p>
+              <input type="range" id="badges" min="0" max="100" value="50" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Dificultad -->
+            <div>
+              <div class="flex justify-between items-center text-sm font-semibold mb-1">
+                <label for="difficulty" class="flex items-center gap-1.5">
+                  <span>🎯 Desafío / Complejidad de Tareas</span>
+                </label>
+                <span id="val_difficulty" class="font-mono text-indigo-600 dark:text-indigo-400">55%</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Nivel de demanda cognitiva (Zona de Desarrollo Próximo).</p>
+              <input type="range" id="difficulty" min="0" max="100" value="55" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Cooperativas -->
+            <div>
+              <div class="flex justify-between items-center text-sm font-semibold mb-1">
+                <label for="coop" class="flex items-center gap-1.5">
+                  <span>🤝 Misiones Cooperativas & Pares</span>
+                </label>
+                <span id="val_coop" class="font-mono text-indigo-600 dark:text-indigo-400">45%</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Trabajo colaborativo, foros de co-evaluación y metas grupales.</p>
+              <input type="range" id="coop" min="0" max="100" value="45" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Barras de Progreso -->
+            <div>
+              <div class="flex justify-between items-center text-sm font-semibold mb-1">
+                <label for="progress" class="flex items-center gap-1.5">
+                  <span>📈 Visibilidad de Progreso y Metacognición</span>
+                </label>
+                <span id="val_progress" class="font-mono text-indigo-600 dark:text-indigo-400">65%</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Checklists de finalización, barras visuales de avance por módulo.</p>
+              <input type="range" id="progress" min="0" max="100" value="65" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Tablas de Clasificación -->
+            <div>
+              <div class="flex justify-between items-center text-sm font-semibold mb-1">
+                <label for="leaderboard" class="flex items-center gap-1.5">
+                  <span>🏆 Tabla de Clasificación (Leaderboards)</span>
+                </label>
+                <span id="val_leaderboard" class="font-mono text-indigo-600 dark:text-indigo-400">30%</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Exposición pública de rankings y puntos individuales.</p>
+              <input type="range" id="leaderboard" min="0" max="100" value="30" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Ficha de Mapeo Técnico para Moodle -->
+        <div class="bg-indigo-50/70 dark:bg-indigo-950/20 rounded-2xl p-5 border border-indigo-100 dark:border-indigo-900/50">
+          <h3 class="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <span>📦</span> Integración Técnica Recomendada (Moodle)
+          </h3>
+          <ul id="moodleTips" class="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
+            <li>Módulo estándar de Restricción de Acceso por finalización de actividad.</li>
+            <li>Plugin <em>Level Up!</em> configurado sin ranking público restrictivo.</li>
+            <li>Insignias de curso vinculadas a hitos metacognitivos.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Telemetría & Simulación de Impacto -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Radar de Autodeterminación y Métricas de Impacto -->
+        <div class="bg-white dark:bg-slate-800/80 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700/60">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+              <span>📊</span> Telemetría Psicoeducativa en Tiempo Real
+            </h2>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 font-medium text-slate-600 dark:text-slate-300">
+              Modelo SDT & Flujo
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            
+            <!-- Radar SVG (Tríada SDT) -->
+            <div class="md:col-span-5 flex flex-col items-center justify-center">
+              <svg id="sdtRadar" viewBox="0 0 240 240" class="w-52 h-52 overflow-visible">
+                <!-- Círculos concéntricos de referencia -->
+                <polygon points="120,40 189.3,160 50.7,160" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" opacity="0.4"/>
+                <polygon points="120,60 172,150 68,150" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/>
+                <polygon points="120,80 154.6,140 85.4,140" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2 2" opacity="0.8"/>
+                
+                <!-- Ejes -->
+                <line x1="120" y1="120" x2="120" y2="30" stroke="#cbd5e1" stroke-width="1"/>
+                <line x1="120" y1="120" x2="198" y2="165" stroke="#cbd5e1" stroke-width="1"/>
+                <line x1="120" y1="120" x2="42" y2="165" stroke="#cbd5e1" stroke-width="1"/>
+                
+                <!-- Polígono Dinámico -->
+                <polygon id="radarPolygon" points="120,70 160,140 80,140" fill="rgba(99, 102, 241, 0.35)" stroke="#4f46e5" stroke-width="2.5" class="transition-all duration-300 ease-out"/>
+                
+                <!-- Vértices -->
+                <circle id="ptAutonomia" cx="120" cy="70" r="4.5" fill="#4f46e5"/>
+                <circle id="ptCompetencia" cx="160" cy="140" r="4.5" fill="#4f46e5"/>
+                <circle id="ptRelacion" cx="80" cy="140" r="4.5" fill="#4f46e5"/>
+
+                <!-- Etiquetas fijas -->
+                <text x="120" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#6366f1">Autonomía</text>
+                <text x="204" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#6366f1">Competencia</text>
+                <text x="36" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#6366f1">Relación</text>
+              </svg>
+              <span class="text-[11px] text-slate-400 mt-2 text-center">Tríada de Necesidades Psicológicas Básicas (Ryan & Deci)</span>
+            </div>
+
+            <!-- Indicadores Clave -->
+            <div class="md:col-span-7 space-y-3.5">
+              
+              <!-- Intrínseca -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>🔥 Motivación Intrínseca</span>
+                  <span id="txtIntrinseca" class="font-mono">72%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="barIntrinseca" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 72%;"></div>
+                </div>
+              </div>
+
+              <!-- Extrínseca -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>🪙 Dependencia Extrínseca (Recompensas)</span>
+                  <span id="txtExtrinseca" class="font-mono">48%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="barExtrinseca" class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: 48%;"></div>
+                </div>
+              </div>
+
+              <!-- Retención -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>🎓 Tasa de Retención y Persistencia Proyectada</span>
+                  <span id="txtRetencion" class="font-mono">78%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="barRetencion" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 78%;"></div>
+                </div>
+              </div>
+
+              <!-- Ansiedad / Toxicidad -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>⚡ Riesgo de Ansiedad y Competencia Destructiva</span>
+                  <span id="txtToxicidad" class="font-mono text-rose-500">24%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="barToxicidad" class="bg-rose-500 h-full rounded-full transition-all duration-300" style="width: 24%;"></div>
+                </div>
+              </div>
+
+              <!-- Sobrecarga Cognitiva -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>🧠 Carga Cognitiva Extrínseca</span>
+                  <span id="txtSobrecarga" class="font-mono">35%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="barSobrecarga" class="bg-sky-500 h-full rounded-full transition-all duration-300" style="width: 35%;"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Módulo de Alertas y Diagnóstico Didáctico Automático -->
+        <div class="bg-white dark:bg-slate-800/80 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700/60">
+          <h2 class="text-base font-bold mb-3 flex items-center gap-2">
+            <span>🔍</span> Diagnóstico Pedagógico Automatizado
+          </h2>
+          <div id="diagnosticCard" class="p-4 rounded-xl border text-sm leading-relaxed transition-all duration-200 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700">
+            Cargando evaluación pedagógica...
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputs = {
+      badges: document.getElementById('badges'),
+      difficulty: document.getElementById('difficulty'),
+      coop: document.getElementById('coop'),
+      progress: document.getElementById('progress'),
+      leaderboard: document.getElementById('leaderboard')
+    };
+
+    const labels = {
+      badges: document.getElementById('val_badges'),
+      difficulty: document.getElementById('val_difficulty'),
+      coop: document.getElementById('val_coop'),
+      progress: document.getElementById('val_progress'),
+      leaderboard: document.getElementById('val_leaderboard')
+    };
+
+    const telemetry = {
+      intrinseca: { bar: document.getElementById('barIntrinseca'), txt: document.getElementById('txtIntrinseca') },
+      extrinseca: { bar: document.getElementById('barExtrinseca'), txt: document.getElementById('txtExtrinseca') },
+      retencion: { bar: document.getElementById('barRetencion'), txt: document.getElementById('txtRetencion') },
+      toxicidad: { bar: document.getElementById('barToxicidad'), txt: document.getElementById('txtToxicidad') },
+      sobrecarga: { bar: document.getElementById('barSobrecarga'), txt: document.getElementById('txtSobrecarga') }
+    };
+
+    const diagnosticCard = document.getElementById('diagnosticCard');
+    const moodleTips = document.getElementById('moodleTips');
+
+    const radarPolygon = document.getElementById('radarPolygon');
+    const ptAutonomia = document.getElementById('ptAutonomia');
+    const ptCompetencia = document.getElementById('ptCompetencia');
+    const ptRelacion = document.getElementById('ptRelacion');
+
+    const presets = {
+      balanced: { badges: 35, difficulty: 60, coop: 80, progress: 85, leaderboard: 15 },
+      traditional: { badges: 85, difficulty: 45, coop: 20, progress: 70, leaderboard: 80 },
+      toxic: { badges: 95, difficulty: 90, coop: 10, progress: 40, leaderboard: 95 },
+      default: { badges: 50, difficulty: 55, coop: 45, progress: 65, leaderboard: 30 }
+    };
+
+    function updateSimulation() {
+      const b = parseFloat(inputs.badges.value);
+      const d = parseFloat(inputs.difficulty.value);
+      const c = parseFloat(inputs.coop.value);
+      const p = parseFloat(inputs.progress.value);
+      const l = parseFloat(inputs.leaderboard.value);
+
+      labels.badges.textContent = b + '%';
+      labels.difficulty.textContent = d + '%';
+      labels.coop.textContent = c + '%';
+      labels.progress.textContent = p + '%';
+      labels.leaderboard.textContent = l + '%';
+
+      // Tríada SDT
+      let autonomia = Math.max(5, Math.min(100, (p * 0.45) + (c * 0.3) - (l * 0.35) - (b * 0.15) + 35));
+      const flowBalance = 100 - Math.abs(d - 58) * 1.6;
+      let competencia = Math.max(5, Math.min(100, (flowBalance * 0.5) + (p * 0.4) - (l * 0.15) + 10));
+      let relacion = Math.max(5, Math.min(100, (c * 0.8) - (l * 0.45) + 20));
+
+      // Métricas
+      let intrinseca = Math.round((autonomia * 0.35) + (competencia * 0.4) + (relacion * 0.25));
+      let extrinseca = Math.round((b * 0.55) + (l * 0.45));
+      let toxicidad = Math.round(Math.max(0, Math.min(100, (l * 0.6) + (d * 0.4) - (c * 0.45) - (p * 0.15))));
+      let sobrecarga = Math.round(Math.max(10, Math.min(100, (b * 0.35) + (l * 0.3) + (d * 0.3) - (p * 0.2) + 15)));
+      let retencion = Math.round(Math.max(15, Math.min(98, (intrinseca * 0.55) + (competencia * 0.35) - (toxicidad * 0.3) + 15)));
+
+      renderMetric(telemetry.intrinseca, intrinseca);
+      renderMetric(telemetry.extrinseca, extrinseca);
+      renderMetric(telemetry.toxicidad, toxicidad);
+      renderMetric(telemetry.retencion, retencion);
+      renderMetric(telemetry.sobrecarga, sobrecarga);
+
+      renderRadar(autonomia, competencia, relacion);
+      renderDiagnosis(autonomia, competencia, relacion, intrinseca, extrinseca, toxicidad, d, l, badges);
+    }
+
+    function renderMetric(element, val) {
+      element.txt.textContent = val + '%';
+      element.bar.style.width = val + '%';
+    }
+
+    function renderRadar(a, c, r) {
+      const originX = 120;
+      const originY = 120;
+      const maxR = 85;
+
+      const rA = (a / 100) * maxR;
+      const xA = originX;
+      const yA = originY - rA;
+
+      const rC = (c / 100) * maxR;
+      const radC = (30 * Math.PI) / 180;
+      const xC = originX + rC * Math.cos(radC);
+      const yC = originY + rC * Math.sin(radC);
+
+      const rR = (r / 100) * maxR;
+      const xR = originX - rR * Math.cos(radC);
+      const yR = originY + rR * Math.sin(radC);
+
+      const pointsStr = `${xA},${yA} ${xC},${yC} ${xR},${yR}`;
+      radarPolygon.setAttribute('points', pointsStr);
+
+      ptAutonomia.setAttribute('cx', xA);
+      ptAutonomia.setAttribute('cy', yA);
+
+      ptCompetencia.setAttribute('cx', xC);
+      ptCompetencia.setAttribute('cy', yC);
+
+      ptRelacion.setAttribute('cx', xR);
+      ptRelacion.setAttribute('cy', yR);
+    }
+
+    function renderDiagnosis(a, c, r, intr, ext, tox, diff, lead, badges) {
+      let title = "";
+      let colorClass = "";
+      let description = "";
+      let tips = [];
+
+      if (tox > 60) {
+        title = "⚠️ Alerta Crítica: Clima Competitivo Destructivo y Riesgo de Deserción";
+        colorClass = "bg-rose-50 text-rose-900 border-rose-200 dark:bg-rose-950/40 dark:text-rose-200 dark:border-rose-900/60";
+        description = "La visibilidad abierta de posiciones combinada con una alta exigencia técnica fomenta el miedo a la exposición al error, aislando a los estudiantes con ritmos de aprendizaje pausados. El aula virtual corre el riesgo de priorizar la comparación social por encima de la construcción de conocimientos.";
+        tips = [
+          "Ocultar o anonimizar la tabla de líderes; sustituirla por metas individuales relativas al punto de partida.",
+          "Transformar desafíos individuales en misiones por clanes o grupos de co-evaluación formativa.",
+          "Añadir retroalimentación formativa y segundas oportunidades de entrega en cuestionarios."
+        ];
+      } else if (badges > 75 && intr < 50) {
+        title = "🪙 Advertencia: Efecto de Sobrejustificación (Overjustification Effect)";
+        colorClass = "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-900/60";
+        description = "La hiper-recompensa extrínseca desplaza el valor del contenido. Los estudiantes completan actividades únicamente para desbloquear medallas o puntos de experiencia, perdiendo el interés intrínseco por la materia una vez retirada la recompensa.";
+        tips = [
+          "Espaciar la entrega de insignias vinculándolas a 'Maestría Demostrada' y no al mero consumo de recursos.",
+          "Dar valor a insignias de acompañamiento de pares o síntesis argumentativa en foros.",
+          "Fomentar diarios de reflexión metacognitiva obligatorios antes de reclamar recompensas."
+        ];
+      } else if (diff < 35) {
+        title = "💤 Estado de Apatía: Tareas de Baja Complejidad";
+        colorClass = "bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700";
+        description = "El nivel de reto se sitúa por debajo de la Zona de Desarrollo Próximo de los estudiantes universitarios. Aunque la retención a corto plazo parezca estable, la falta de desafío genuino provoca desconexión cognitiva.";
+        tips = [
+          "Incorporar problemas de estudio de casos reales contextualizados y debates de resolución abierta.",
+          "Introducir itinerarios condicionales en Moodle con ramas avanzadas voluntarias."
+        ];
+      } else {
+        title = "🌟 Configuración Didáctica Equilibrada (Canal de Flujo Óptimo)";
+        colorClass = "bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-900/60";
+        description = "Excelente alineación pedagógica. Existe un balance sólido entre autonomía del estudiante, retroalimentación visible del progreso y soporte entre pares, favoreciendo la autorregulación del aprendizaje sin generar sobrecarga ni hostilidad competitiva.";
+        tips = [
+          "Mantener el bloque 'Completion Progress' configurado por secciones temáticas.",
+          "Utilizar el foro tipo 'Preguntas y Respuestas' donde los estudiantes desbloquean intervenciones colaborativas.",
+          "Conservar el sistema de insignias como acreditación formativa de competencias socioeducativas."
+        ];
+      }
+
+      diagnosticCard.className = `p-4 rounded-xl border text-sm leading-relaxed transition-all duration-200 ${colorClass}`;
+      diagnosticCard.innerHTML = `
+        <div class="font-bold text-sm mb-1.5">${title}</div>
+        <p class="text-xs sm:text-sm mb-3 opacity-95">${description}</p>
+        <div class="text-xs font-semibold uppercase tracking-wider mb-1 opacity-90">Acciones didácticas recomendadas:</div>
+        <ul class="list-disc list-inside text-xs space-y-1 opacity-95">
+          ${tips.map(t => `<li>${t}</li>`).join('')}
+        </ul>
+      `;
+
+      moodleTips.innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+    }
+
+    function applyPreset(name) {
+      const p = presets[name];
+      if (!p) return;
+      inputs.badges.value = p.badges;
+      inputs.difficulty.value = p.difficulty;
+      inputs.coop.value = p.coop;
+      inputs.progress.value = p.progress;
+      inputs.leaderboard.value = p.leaderboard;
+      updateSimulation();
+    }
+
+    function resetDefaults() {
+      applyPreset('default');
+    }
+
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const b = inputs.badges.value;
+      const d = inputs.difficulty.value;
+      const c = inputs.coop.value;
+      const p = inputs.progress.value;
+      const l = inputs.leaderboard.value;
+
+      const report = `# AUDITORÍA DE DISEÑO INSTRUCCIONAL Y GAMIFICACIÓN
+Fecha: ${new Date().toLocaleDateString('es-ES')}
+Entorno Evaluado: SimuGam Lab - Moodle Learning Environment
+
+## 1. Parámetros de Diseño Configurados
+- Frecuencia de Insignias y Recompensas: ${b}%
+- Complejidad / Desafío de Tareas: ${d}%
+- Misiones Cooperativas & Interacción entre Pares: ${c}%
+- Visibilidad Metacognitiva de Progreso: ${p}%
+- Exposición Pública de Rankings (Leaderboards): ${l}%
+
+## 2. Telemetría Psicoeducativa Estimada
+- Motivación Intrínseca: ${telemetry.intrinseca.txt.textContent}
+- Dependencia Extrínseca: ${telemetry.extrinseca.txt.textContent}
+- Tasa Proyectada de Retención / Persistencia: ${telemetry.retencion.txt.textContent}
+- Riesgo de Ansiedad y Toxicidad Social: ${telemetry.toxicidad.txt.textContent}
+- Carga Cognitiva Extrínseca: ${telemetry.sobrecarga.txt.textContent}
+
+## 3. Fundamentación Teórica
+- Teoría de la Autodeterminación (Ryan & Deci, 2000): Equilibrio entre Autonomía, Competencia y Relación.
+- Modelo de Flujo (Csíkszentmihályi, 1990): Equilibrio entre Habilidad del Estudiante y Reto Instruccional.
+- Efecto de Sobrejustificación (Deci et al., 1999): Impacto de las recompensas tangibles contingentes sobre la motivación inherente.
+
+Generado automáticamente desde SimuGam Lab.
+`;
+
+      const blob = new Blob([report], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditoria_gamificacion_${Date.now()}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+    });
+
+    Object.values(inputs).forEach(input => {
+      input.addEventListener('input', updateSimulation);
+    });
+
+    updateSimulation();
+  </script>
+</body>
+</html>
